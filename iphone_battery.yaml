@@ -1,0 +1,62 @@
+# iPhone Battery Alert Automations
+# Requires: Home Assistant Companion App installed on iPhone
+# The battery sensor entity will be named based on your iPhone's name,
+# e.g., sensor.your_name_iphone_battery_level
+
+# Automation: Notify when iPhone battery is low
+- alias: "iPhone - Low Battery Alert"
+  description: "Send notification when iPhone battery drops below 20%"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.your_iphone_battery_level  # Replace with your battery sensor
+      below: 20
+  condition:
+    # Only alert once per day to avoid repeated notifications
+    - condition: template
+      value_template: >
+        {{ (now() - state_attr('automation.iphone_low_battery_alert', 'last_triggered') | default(now() - timedelta(days=1))).total_seconds() > 3600 }}
+  action:
+    - service: notify.mobile_app_your_iphone  # Replace with your iPhone notify service
+      data:
+        title: "Low Battery"
+        message: "iPhone battery is at {{ states('sensor.your_iphone_battery_level') }}%. Please charge soon."
+        data:
+          push:
+            sound: default
+  mode: single
+
+# Automation: Notify when iPhone battery is critically low
+- alias: "iPhone - Critical Battery Alert"
+  description: "Send critical notification when iPhone battery drops below 10%"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.your_iphone_battery_level  # Replace with your battery sensor
+      below: 10
+  condition: []
+  action:
+    - service: notify.mobile_app_your_iphone  # Replace with your iPhone notify service
+      data:
+        title: "Critical Battery"
+        message: "iPhone battery is critically low at {{ states('sensor.your_iphone_battery_level') }}%! Charge immediately."
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+  mode: single
+
+# Automation: Notify when iPhone starts charging
+- alias: "iPhone - Started Charging"
+  description: "Notify when iPhone is plugged in to charge"
+  trigger:
+    - platform: state
+      entity_id: sensor.your_iphone_battery_state  # Replace with your battery state sensor
+      to: "Charging"
+  condition: []
+  action:
+    - service: notify.persistent_notification
+      data:
+        title: "iPhone Charging"
+        message: "iPhone has started charging. Battery: {{ states('sensor.your_iphone_battery_level') }}%"
+  mode: single
