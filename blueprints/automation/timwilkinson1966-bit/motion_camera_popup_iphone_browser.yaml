@@ -31,7 +31,7 @@ blueprint:
 
     message:
       name: Notification Message
-      default: "Motion detected!"
+      default: Motion detected!
       selector:
         text: {}
 
@@ -45,6 +45,7 @@ trigger:
 variables:
   ios_target: !input ios_device
   browser_target: !input browser_id
+  camera_target: !input camera_entity
 
 action:
   - choose:
@@ -52,13 +53,11 @@ action:
           - condition: template
             value_template: "{{ ios_target | trim != '' }}"
         sequence:
-          - service: "{{ ios_target }}"
+          - action: "{{ ios_target }}"
             data:
               message: !input message
               data:
-                attachment:
-                  content-type: camera
-                  entity_id: !input camera_entity
+                entity_id: "{{ camera_target }}"
                 push:
                   category: camera
 
@@ -67,18 +66,18 @@ action:
           - condition: template
             value_template: "{{ browser_target | trim != '' }}"
         sequence:
-          - service: browser_mod.popup
+          - action: browser_mod.popup
             data:
               browser_id:
                 - "{{ browser_target }}"
-              title: "Motion Detected"
+              title: Motion Detected
               timeout: 60000
               dismissable: true
               autoclose: false
               size: fullscreen
               content:
                 type: picture-entity
-                entity: !input camera_entity
+                entity: "{{ camera_target }}"
                 camera_view: live
                 show_state: false
                 show_name: true
