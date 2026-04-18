@@ -1,6 +1,6 @@
 blueprint:
   name: Motion Camera Popup (iPhone + Browser)
-  description: Notify a mobile device and optionally open a camera popup on a browser when motion is detected.
+  description: Notify iPhone or iPad and optionally open a camera popup on a browser when motion is detected.
   domain: automation
   input:
     motion_sensor:
@@ -16,11 +16,11 @@ blueprint:
         entity:
           domain: camera
 
-    notify_action:
-      name: Notification action
-      description: Choose your mobile app notification action from your system, for example notify.mobile_app_your_phone.
+    ios_device:
+      name: iOS Device
+      description: Your iPhone or iPad notify target (for example notify.mobile_app_your_device_name)
       selector:
-        action: {}
+        text: {}
 
     browser_id:
       name: Browser ID (optional)
@@ -43,36 +43,23 @@ trigger:
     to: "on"
 
 variables:
+  ios_target: !input ios_device
   browser_target: !input browser_id
   camera_target: !input camera_entity
-  notification_message: !input message
 
 action:
   - choose:
-      - conditions: []
+      - conditions:
+          - condition: template
+            value_template: "{{ ios_target | trim != '' }}"
         sequence:
-          - variables:
-              notify_sequence: !input notify_action
-          - repeat:
-              for_each: "{{ notify_sequence }}"
-              sequence:
-                - action: "{{ repeat.item.action }}"
-                  data: >-
-                    {{
-                      dict(
-                        repeat.item.data | default({}),
-                        message=notification_message,
-                        data=dict(
-                          repeat.item.data.data | default({}),
-                          entity_id=camera_target,
-                          push=dict(
-                            repeat.item.data.data.push | default({}),
-                            category='camera'
-                          )
-                        )
-                      )
-                    }}
-                  target: "{{ repeat.item.target if repeat.item.target is defined else omit }}"
+          - action: "{{ ios_target }}"
+            data:
+              message: !input message
+              data:
+                entity_id: "{{ camera_target }}"
+                push:
+                  category: camera
 
   - choose:
       - conditions:
