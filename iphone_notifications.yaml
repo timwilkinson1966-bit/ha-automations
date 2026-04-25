@@ -1,0 +1,65 @@
+# iPhone Notification Automations
+# Requires: Home Assistant Companion App installed on iPhone
+# The notify service will be named based on your iPhone's name,
+# e.g., notify.mobile_app_your_name_iphone
+
+# Automation: Send a push notification to iPhone when a door opens
+- alias: "iPhone - Door Open Alert"
+  description: "Send push notification to iPhone when front door opens"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.front_door  # Replace with your door sensor entity
+      to: "on"
+  condition: []
+  action:
+    - service: notify.mobile_app_your_iphone  # Replace with your iPhone notify service
+      data:
+        title: "Door Alert"
+        message: "The front door has been opened."
+        data:
+          push:
+            sound: default
+            badge: 1
+          # Actionable notification - user can respond without opening the app
+          actions:
+            - action: "LOCK_DOOR"
+              title: "Lock Door"
+            - action: "DISMISS"
+              title: "Dismiss"
+  mode: single
+
+# Automation: Handle actionable notification response - Lock Door
+- alias: "iPhone - Handle Lock Door Action"
+  description: "Lock door when user taps Lock Door in notification"
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "LOCK_DOOR"
+  condition: []
+  action:
+    - service: lock.lock
+      target:
+        entity_id: lock.front_door  # Replace with your lock entity
+  mode: single
+
+# Automation: Send critical alert (bypasses silent/do-not-disturb)
+- alias: "iPhone - Smoke Alarm Critical Alert"
+  description: "Send critical push notification to iPhone on smoke alarm"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.smoke_detector  # Replace with your smoke sensor entity
+      to: "on"
+  condition: []
+  action:
+    - service: notify.mobile_app_your_iphone  # Replace with your iPhone notify service
+      data:
+        title: "SMOKE DETECTED"
+        message: "Smoke alarm triggered! Check your home immediately."
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+  mode: single

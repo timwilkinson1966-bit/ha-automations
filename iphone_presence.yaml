@@ -1,0 +1,42 @@
+# iPhone Presence Detection Automations
+# Requires: Home Assistant Companion App installed on iPhone
+# The device tracker entity will be named based on your iPhone's name,
+# e.g., device_tracker.your_name_iphone
+
+# Automation 1: Trigger actions when iPhone arrives home
+- alias: "iPhone - Arrived Home"
+  description: "Triggered when iPhone returns to the home zone"
+  trigger:
+    - platform: device
+      device_id: YOUR_IPHONE_DEVICE_ID
+      domain: device_tracker
+      entity_id: device_tracker.your_iphone
+      type: enters
+      zone: zone.home
+  condition: []
+  action:
+    - service: notify.persistent_notification
+      data:
+        title: "Welcome Home"
+        message: "iPhone has arrived home."
+    # Add your own actions here, e.g. turn on lights, unlock doors
+  mode: single
+
+# Automation 2: Trigger actions when iPhone leaves home
+- alias: "iPhone - Left Home"
+  description: "Triggered when iPhone leaves the home zone"
+  trigger:
+    - platform: device
+      device_id: YOUR_IPHONE_DEVICE_ID
+      domain: device_tracker
+      entity_id: device_tracker.your_iphone
+      type: leaves
+      zone: zone.home
+  condition: []
+  action:
+    - service: notify.persistent_notification
+      data:
+        title: "Goodbye"
+        message: "iPhone has left home."
+    # Add your own actions here, e.g. turn off lights, lock doors
+  mode: single
