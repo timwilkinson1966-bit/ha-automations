@@ -1,0 +1,7 @@
+# Never commit real compliance data or generated reports
+config.yaml
+config.json
+*.xlsx
+*.xlsm
+Reports/
+reports/
