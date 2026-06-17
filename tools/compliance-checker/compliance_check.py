@@ -395,6 +395,74 @@ def write_report(findings: list[Finding], cfg: Config, today: dt.date) -> str:
     return out_path
 
 
+def _humanise_days(days: int) -> str:
+    if days < 0:
+        n = -days
+        return f"{n} day{'s' if n != 1 else ''} ago"
+    if days == 0:
+        return "today"
+    return f"in {days} day{'s' if days != 1 else ''}"
+
+
+def format_briefing(findings: list[Finding], cfg: Config, today: dt.date) -> str:
+    """Build a plain-English markdown briefing from the findings."""
+    overdue = sorted((f for f in findings if f.days < 0), key=lambda f: f.days)
+    critical = sorted((f for f in findings if 0 <= f.days <= cfg.critical_days),
+                      key=lambda f: f.days)
+    soon = sorted((f for f in findings if cfg.critical_days < f.days <= cfg.warning_days),
+                  key=lambda f: f.days)
+
+    lines: list[str] = []
+    lines.append(f"# Transport Compliance Briefing — {today.strftime('%A %d %B %Y')}")
+    lines.append("")
+
+    if not findings:
+        lines.append("✅ **All clear** — nothing overdue or due within "
+                     f"{cfg.warning_days} days.")
+        lines.append("")
+        lines.append("_Decision-support only — verify against your source records._")
+        return "\n".join(lines)
+
+    lines.append(
+        f"**Summary:** {len(overdue)} overdue · "
+        f"{len(critical)} due within {cfg.critical_days} days · "
+        f"{len(soon)} due within {cfg.warning_days} days."
+    )
+    lines.append("")
+
+    def block(title: str, items: list[Finding], past: bool) -> None:
+        if not items:
+            return
+        lines.append(f"## {title}")
+        for f in items:
+            verb = "was due" if past else "due"
+            lines.append(
+                f"- **{f.item}** — {f.identifier} — {verb} "
+                f"{f.due.strftime('%d/%m/%Y')} ({_humanise_days(f.days)}) "
+                f"_[{f.file} › {f.sheet}]_"
+            )
+        lines.append("")
+
+    block("🔴 Overdue — act now", overdue, past=True)
+    block(f"🟠 Due within {cfg.critical_days} days", critical, past=False)
+    block(f"🟡 Due within {cfg.warning_days} days", soon, past=False)
+
+    lines.append("_Decision-support only — does not replace the qualified "
+                 "Transport Manager named on the O-licence. Verify against source records._")
+    return "\n".join(lines)
+
+
+def write_briefing(findings: list[Finding], cfg: Config, today: dt.date) -> tuple[str, str]:
+    """Write the markdown briefing next to the report; return (text, path)."""
+    os.makedirs(cfg.out, exist_ok=True)
+    text = format_briefing(findings, cfg, today)
+    stamp = today.strftime("%Y-%m-%d")
+    path = os.path.join(cfg.out, f"compliance_briefing_{stamp}.md")
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(text + "\n")
+    return text, path
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -425,6 +493,8 @@ def main(argv=None) -> int:
                    help="Amber threshold: flag items due within this many days (default 30)")
     p.add_argument("--critical-days", type=int, default=None,
                    help="Red-emphasis threshold in days (default 7)")
+    p.add_argument("--no-brief", action="store_true",
+                   help="Skip writing the plain-English markdown briefing")
     args = p.parse_args(argv)
 
     cfg = build_config(args)
@@ -448,6 +518,13 @@ def main(argv=None) -> int:
     print(f"Scanned {n_files} workbook(s); {len(all_findings)} item(s) flagged.")
     out_path = write_report(all_findings, cfg, today)
     print(f"Report written: {out_path}")
+
+    if not args.no_brief:
+        text, brief_path = write_briefing(all_findings, cfg, today)
+        print(f"Briefing written: {brief_path}")
+        print("\n" + "=" * 70)
+        print(text)
+        print("=" * 70)
 
     overdue = sum(1 for f in all_findings if f.days < 0)
     if overdue:

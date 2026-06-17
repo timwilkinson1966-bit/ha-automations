@@ -107,6 +107,7 @@ python compliance_check.py --config config.yaml
 | `--warning-days` | Amber: flag items due within N days | 30 |
 | `--critical-days` | Red-emphasis threshold | 7 |
 | `--config` | Path to a `.yaml`/`.json` config | – |
+| `--no-brief` | Skip the plain-English markdown briefing | off |
 
 ### Fine-tuning with a config
 
@@ -120,14 +121,37 @@ auto-discovery and only add a config if something is missed or over-matched.
 
 ---
 
-## Optional: an AI summary on top (Claude `/loop`)
+## Plain-English daily briefing
 
-If you install **Claude Code** on the same PC, you can have it run this script on
-an interval and add a plain-English briefing ("3 vehicles overdue PMI, 2 driver
-licence checks due this week…"). Use the `/loop` skill, e.g.
-`/loop 1d` running a prompt that calls the script and summarises the report.
-The scheduled `.bat` above is the simpler, dependency-free option and is all you
-need for the report itself.
+As well as the Excel report, every run writes a **plain-English markdown
+briefing** next to it — `compliance_briefing_YYYY-MM-DD.md` — and prints it to the
+console. It reads like:
+
+```
+# Transport Compliance Briefing — Wednesday 17 June 2026
+Summary: 2 overdue · 1 due within 7 days · 3 due within 30 days.
+
+## 🔴 Overdue — act now
+- MOT Due — AB12 CDE — was due 12/06/2026 (5 days ago)
+...
+```
+
+No AI required — it's generated deterministically from your data. (Add `--no-brief`
+to skip it.)
+
+### Optional: a conversational briefing via Claude `/loop`
+
+If you install **Claude Code** on the same PC, you can have it run the checker on
+an interval and turn that briefing into a short, prioritised, spoken-style summary
+with suggested actions ("Book the AB12 CDE MOT today; chase John Smith's licence
+check…"). See **`briefing-prompt.md`** for the ready-made `/loop` prompt, e.g.:
+
+```
+/loop 1d /compliance-briefing
+```
+
+Claude Code must be running on that PC for the loop to fire. The scheduled `.bat`
++ markdown briefing above is the dependency-free option and needs no AI at run time.
 
 ---
 
