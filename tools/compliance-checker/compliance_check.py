@@ -324,10 +324,12 @@ GREEN = PatternFill("solid", fgColor="C6EFCE")
 HEADER_FILL = PatternFill("solid", fgColor="305496")
 
 
-def write_report(findings: list[Finding], cfg: Config, today: dt.date) -> str:
+def write_report(findings: list[Finding], cfg: Config, today: dt.date,
+                 filename: Optional[str] = None) -> str:
     os.makedirs(cfg.out, exist_ok=True)
     stamp = today.strftime("%Y-%m-%d")
-    out_path = os.path.join(cfg.out, f"compliance_report_{stamp}.xlsx")
+    name = filename or f"compliance_report_{stamp}.xlsx"
+    out_path = os.path.join(cfg.out, name)
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -452,12 +454,14 @@ def format_briefing(findings: list[Finding], cfg: Config, today: dt.date) -> str
     return "\n".join(lines)
 
 
-def write_briefing(findings: list[Finding], cfg: Config, today: dt.date) -> tuple[str, str]:
+def write_briefing(findings: list[Finding], cfg: Config, today: dt.date,
+                   filename: Optional[str] = None) -> tuple[str, str]:
     """Write the markdown briefing next to the report; return (text, path)."""
     os.makedirs(cfg.out, exist_ok=True)
     text = format_briefing(findings, cfg, today)
     stamp = today.strftime("%Y-%m-%d")
-    path = os.path.join(cfg.out, f"compliance_briefing_{stamp}.md")
+    name = filename or f"compliance_briefing_{stamp}.md"
+    path = os.path.join(cfg.out, name)
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(text + "\n")
     return text, path
@@ -495,6 +499,9 @@ def main(argv=None) -> int:
                    help="Red-emphasis threshold in days (default 7)")
     p.add_argument("--no-brief", action="store_true",
                    help="Skip writing the plain-English markdown briefing")
+    p.add_argument("--latest", action="store_true",
+                   help="Also write fixed-name copies (compliance_report_latest.xlsx / "
+                        "compliance_briefing_latest.md) that overwrite each run")
     args = p.parse_args(argv)
 
     cfg = build_config(args)
@@ -518,10 +525,18 @@ def main(argv=None) -> int:
     print(f"Scanned {n_files} workbook(s); {len(all_findings)} item(s) flagged.")
     out_path = write_report(all_findings, cfg, today)
     print(f"Report written: {out_path}")
+    if args.latest:
+        latest_xlsx = write_report(all_findings, cfg, today,
+                                   filename="compliance_report_latest.xlsx")
+        print(f"Latest report:  {latest_xlsx}")
 
     if not args.no_brief:
         text, brief_path = write_briefing(all_findings, cfg, today)
         print(f"Briefing written: {brief_path}")
+        if args.latest:
+            _, latest_md = write_briefing(all_findings, cfg, today,
+                                          filename="compliance_briefing_latest.md")
+            print(f"Latest briefing:  {latest_md}")
         print("\n" + "=" * 70)
         print(text)
         print("=" * 70)

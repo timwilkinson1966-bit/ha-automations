@@ -98,7 +98,24 @@ python compliance_check.py --root "C:\Compliance" --out "C:\Reports" --warning-d
 
 REM Precise control via a config file:
 python compliance_check.py --config config.yaml
+
+REM Also keep a stable, always-overwritten copy for a dashboard / Power Automate:
+python compliance_check.py --root "C:\Compliance" --out "C:\Reports" --latest
 ```
+
+### Stable file names for dashboards (`--latest`)
+
+By default each run produces a **dated** file (`compliance_report_2026-06-17.xlsx`),
+so you build up history. Add `--latest` and it *also* writes fixed-name copies that
+overwrite every run:
+
+- `compliance_report_latest.xlsx`
+- `compliance_briefing_latest.md`
+
+Point Power Automate, a Power BI/Excel dashboard, an email flow, or a shared-drive
+link at those stable names so they always pick up the most recent run without
+needing to know today's date. The `run_compliance_check.bat` launcher already
+passes `--latest`.
 
 | Option | Meaning | Default |
 |---|---|---|
@@ -108,6 +125,7 @@ python compliance_check.py --config config.yaml
 | `--critical-days` | Red-emphasis threshold | 7 |
 | `--config` | Path to a `.yaml`/`.json` config | – |
 | `--no-brief` | Skip the plain-English markdown briefing | off |
+| `--latest` | Also write fixed-name `*_latest` copies that overwrite each run | off |
 
 ### Fine-tuning with a config
 

@@ -18,7 +18,8 @@ if %ERRORLEVEL%==0 (
 )
 
 cd /d "%~dp0"
-%PY% compliance_check.py --root "%ROOT%" --out "%OUT%"
+REM --latest also writes stable compliance_report_latest.xlsx / _latest.md copies.
+%PY% compliance_check.py --root "%ROOT%" --out "%OUT%" --latest
 
 REM Keep the window open if launched by double-click (not when scheduled).
 if "%1"=="" pause
