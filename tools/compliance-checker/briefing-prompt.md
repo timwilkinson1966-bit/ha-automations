@@ -29,8 +29,11 @@ taste. Claude Code must be running for the loop to fire.)
 
 > You are assisting a UK road-haulage Transport Manager. Do the following:
 >
-> 1. Run the compliance checker (edit paths to match this machine):
->    `python compliance_check.py --root "C:\path\to\Compliance" --out "C:\path\to\Compliance\Reports"`
+> 1. Run the briefing generator (edit the path to match this machine). If you
+>    track everything on a `Master_Dashboard` tab, use the dashboard reader:
+>    `python dashboard_briefing.py --file "C:\path\to\Transport Compliance Workbook.xlsm" --out "C:\path\to\Reports"`
+>    Otherwise use the folder scanner:
+>    `python compliance_check.py --root "C:\path\to\Compliance" --out "C:\path\to\Reports"`
 > 2. Read the markdown briefing it just wrote (the newest
 >    `compliance_briefing_*.md` in the Reports folder).
 > 3. Write a short, plain-English daily briefing (under ~150 words) that:

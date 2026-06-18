@@ -20,6 +20,22 @@ O-licence review dates, and anything else whose header contains a due/expiry wor
 
 ---
 
+## Two ways to use this
+
+**A. Dashboard briefing (`dashboard_briefing.py`)** — *recommended if you already
+have a workbook with a `Master_Dashboard` tab that computes the RAG counts.* It
+reads the headline numbers off your dashboard and turns them into a short
+plain-English briefing. It finds each metric by its **label text** (e.g. it locates
+"HGV MOT EXPIRED" and reads the count beside it), so it never touches the
+personal-data action lists lower down. See **[Dashboard briefing](#dashboard-briefing)**.
+
+**B. Folder scanner (`compliance_check.py`)** — scans a folder of workbooks, finds
+date columns by their headers, and computes the RAG report itself. Use this if you
+*don't* already have a dashboard. The rest of this README covers the scanner; the
+dashboard option is self-contained in its own section below.
+
+---
+
 ## Why it runs on *your* PC
 
 Your spreadsheets live on your machine / OneDrive / network drive. This tool
@@ -170,6 +186,59 @@ check…"). See **`briefing-prompt.md`** for the ready-made `/loop` prompt, e.g.
 
 Claude Code must be running on that PC for the loop to fire. The scheduled `.bat`
 + markdown briefing above is the dependency-free option and needs no AI at run time.
+
+---
+
+## Dashboard briefing
+
+If your workbook already computes everything on a `Master_Dashboard` tab (RAG
+count blocks like "HGV MOT EXPIRED", "DQC due within 30 days", etc.), use
+`dashboard_briefing.py` to turn those headline numbers into a daily briefing —
+no recomputing, and it only reads the summary counts.
+
+### Run it
+
+```bat
+python dashboard_briefing.py --file "C:\path\to\Transport Compliance Workbook.xlsm"
+
+REM also save the briefing (and a stable _latest copy) to a folder:
+python dashboard_briefing.py --file "...xlsm" --out "C:\path\to\Reports"
+
+REM with a config that pins your exact dashboard wording:
+python dashboard_briefing.py --config dashboard.yaml
+```
+
+It prints the briefing plus a line like `Metrics matched: 18 | not found: 0`.
+
+### First-run tuning
+
+The tool ships with sensible default metric labels, but **your wording may differ
+slightly**. On the first run, check the briefing for a line starting
+"⚠️ Couldn't find these labels…". For anything listed:
+
+1. Copy `dashboard.example.yaml` to `dashboard.yaml`.
+2. Edit the `label:` text to match exactly what your dashboard cell says (case,
+   spacing and punctuation don't matter — it's a forgiving match).
+3. Add or remove metrics so the list mirrors your dashboard's categories.
+4. Re-run with `--config dashboard.yaml` until `not found: 0`.
+
+| Option | Meaning | Default |
+|---|---|---|
+| `--file` | Path to the workbook | – (required) |
+| `--out` | Folder for the briefing (`.md` + `_latest`) | – (print only) |
+| `--sheet` | Dashboard tab name | `Master_Dashboard` |
+| `--config` | Path to `dashboard.yaml`/`.json` | – |
+
+> Reads cached cell values. So the dashboard reflects the latest data, **open and
+> save the workbook (which recalculates) before the briefing runs**, or schedule
+> the briefing shortly after whatever updates the workbook.
+
+### Schedule + conversational layer
+
+Schedule `dashboard_briefing.py` exactly like the scanner (Windows Task Scheduler,
+see above). The Claude `/loop` prompt in `briefing-prompt.md` works with this mode
+too — point it at `dashboard_briefing.py` to get a prioritised, spoken-style
+version of the briefing with suggested actions.
 
 ---
 
