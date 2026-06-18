@@ -1,0 +1,52 @@
+# ---------------------------------------------------------------------------
+# Config for dashboard_briefing.py — reads an existing Master_Dashboard tab.
+# Copy to "dashboard.yaml" and edit, then run:
+#     python dashboard_briefing.py --config dashboard.yaml
+#
+# The reader finds each metric by its LABEL text and reads the count beside it,
+# so you only need to get the wording roughly right (matching ignores case,
+# spacing and punctuation). Run once and check the "not found" list, then paste
+# the exact wording from your dashboard for anything it missed.
+# ---------------------------------------------------------------------------
+
+# Full path to your workbook (the .xlsm is fine — macros are ignored).
+file: "C:/Users/you/OneDrive/Transport Compliance Workbook v6.3.xlsm"
+
+# Where to write the briefing (omit to just print on screen).
+out: "C:/Users/you/OneDrive/Compliance/Reports"
+
+# The dashboard tab name.
+sheet: "Master_Dashboard"
+
+# How many columns to the right of a label to look for its count.
+scan_cols: 12
+
+# Single-value header fields (label on the sheet -> name in the briefing).
+header_fields:
+  - { label: "Operator Licence", name: "O-Licence" }
+  - { label: "Last Updated",     name: "Dashboard last updated" }
+
+# Metrics to report. group: "red" = expired/overdue, "amber" = due soon.
+# Counts of 0 are treated as clear and left out of the briefing.
+# Adjust the label text to match YOUR dashboard exactly where needed.
+metrics:
+  # --- expired / overdue ---
+  - { label: "Licences EXPIRED",        name: "Driver licences expired",        group: "red" }
+  - { label: "DQC EXPIRED",             name: "Driver CPC (DQC) expired",       group: "red" }
+  - { label: "HGV MOT EXPIRED",         name: "HGV MOT expired",                group: "red" }
+  - { label: "HGV Tax EXPIRED",         name: "HGV road tax expired",           group: "red" }
+  - { label: "Trailer MOT EXPIRED",     name: "Trailer MOT expired",            group: "red" }
+  - { label: "Health Docs OVERDUE",     name: "Driver health docs overdue",     group: "red" }
+  - { label: "Eyesight Check OVERDUE",  name: "Eyesight checks overdue",        group: "red" }
+  - { label: "D&A Check OVERDUE",       name: "Drug & alcohol checks overdue",  group: "red" }
+  - { label: "Tacho Direct Download",   name: "Tacho downloads missing/expired",group: "red" }
+  # --- due soon ---
+  - { label: "Licences due within 30 days",     name: "Driver licences due (30d)",  group: "amber" }
+  - { label: "DQC due within 30 days",          name: "Driver CPC due (30d)",       group: "amber" }
+  - { label: "DQC due within 90 days",          name: "Driver CPC due (90d)",       group: "amber" }
+  - { label: "Driver Cards due within 30 days", name: "Driver tacho cards due (30d)", group: "amber" }
+  - { label: "HGV MOT due within 30 days",      name: "HGV MOT due (30d)",          group: "amber" }
+  - { label: "HGV Tax due within 30 days",      name: "HGV road tax due (30d)",     group: "amber" }
+  - { label: "Company Cars MOT due 30 days",    name: "Company car MOT due (30d)",  group: "amber" }
+  - { label: "Company Cars Tax due 30 days",    name: "Company car tax due (30d)",  group: "amber" }
+  - { label: "Trailer MOT due within 30 days",  name: "Trailer MOT due (30d)",      group: "amber" }

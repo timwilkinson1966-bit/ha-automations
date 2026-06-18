@@ -1,0 +1,13 @@
+# Never commit real compliance data or generated reports
+config.yaml
+config.json
+dashboard.yaml
+dashboard.json
+*.xlsx
+*.xlsm
+Reports/
+reports/
+
+# Python cache
+__pycache__/
+*.pyc

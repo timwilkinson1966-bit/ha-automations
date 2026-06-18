@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# Compliance checker config (optional).
+# Copy to "config.yaml" and edit. Run with:  python compliance_check.py --config config.yaml
+#
+# You do NOT need a config at all — running with just --root works via
+# auto-discovery. Use this only when you want precise control or to add
+# keywords/rules that match your own column names.
+# ---------------------------------------------------------------------------
+
+# Folder to scan (use your real path). On Windows, forward slashes are fine.
+root: "C:/Users/you/OneDrive/Compliance"
+
+# Where to write the dated Excel report.
+out: "C:/Users/you/OneDrive/Compliance/Reports"
+
+# Amber: flag anything due within this many days.
+warning_days: 30
+# Red emphasis: items due within this many days are highlighted hardest.
+critical_days: 7
+
+# Auto-discover date columns by header keyword (recommended: keep true).
+auto_discover: true
+
+# How many top rows to inspect when locating the header row in each sheet.
+header_scan_rows: 8
+
+# Files to ignore (Excel temp/lock files + the reports this tool produces).
+exclude:
+  - "~$*"
+  - "*compliance_report_*.xlsx"
+
+# Header keywords that mark a column as a compliance date to check.
+# These ADD to / override the built-in defaults if you list them here.
+# (If you omit this key entirely, the sensible built-in list is used.)
+# keywords:
+#   - "mot"
+#   - "pmi"
+#   - "tacho"
+#   - "calibration"
+#   - "licence"
+#   - "cpc"
+#   - "insurance"
+#   - "loler"
+#   - "due"
+#   - "expiry"
+
+# Column headers used to label each flagged row (vehicle reg, driver name...).
+# id_keywords:
+#   - "reg"
+#   - "vehicle"
+#   - "driver"
+#   - "name"
+
+# Precise rules for known files/sheets/columns. Each rule pins an exact column.
+# rules:
+#   - file_glob: "Fleet*.xlsx"     # which files (filename glob)
+#     sheet: "Vehicles"            # which tab (omit for any tab)
+#     column: "Next PMI Due"       # header text to match (case-insensitive substring)
+#     label: "PMI / Safety Inspection"
+#     warning_days: 14             # override the global amber threshold
+#   - file_glob: "Drivers*.xlsm"
+#     sheet: "Licences"
+#     column: "Licence Check Due"
+#     label: "Driver licence check"
